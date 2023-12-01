@@ -16,26 +16,24 @@ def get_calibration_values(input_file, include_words=False):
 
 
 def parse_calibration_value(line, include_words=False):
-    left_digit, right_digit = None, None
     left_pointer, right_pointer = 0, len(line) - 1
 
-    while left_pointer <= right_pointer:
-        if line[left_pointer].isdigit():
-            left_digit = line[left_pointer]
-            break
-        elif include_words and (value := get_numerical_value(line[left_pointer:])):
-            left_digit = value
-            break
-        left_pointer += 1
+    def get_closest_number(pointer):
+        nonlocal left_pointer
 
-    while left_pointer <= right_pointer:
-        if line[right_pointer].isdigit():
-            right_digit = line[right_pointer]
-            break
-        elif include_words and (value := get_numerical_value(line[right_pointer:])):
-            right_digit = value
-            break
-        right_pointer -= 1
+        while left_pointer <= pointer <= right_pointer:
+            if line[pointer].isdigit():
+                return line[pointer]
+            elif include_words and (value := get_numerical_value(line[pointer:])):
+                return value
+
+            if pointer == left_pointer:
+                left_pointer = pointer = pointer + 1
+            else:
+                pointer -= 1
+
+    left_digit = get_closest_number(left_pointer)
+    right_digit = get_closest_number(right_pointer)
 
     if not (left_digit and right_digit):
         raise CalibrationValueNotFound(f"Could not find a calibration value for line: {line}")
