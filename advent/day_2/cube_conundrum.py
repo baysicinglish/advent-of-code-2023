@@ -1,3 +1,5 @@
+from typing import Tuple
+
 
 def get_possible_games(results_log, available_cubes):
     with open(f"day_2/inputs/{results_log}") as results:
@@ -7,10 +9,10 @@ def get_possible_games(results_log, available_cubes):
                 yield game_number
 
 
-def parse_line(line):
+def parse_line(line: str) -> Tuple[int, dict[str, int]]:
     """
-    Expects a game in the form `Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green`
-    Returns the game number as an int and a dict containing the maximum count of all colours revealed during the game
+    Returns the game number and the maximum count per colour of cube revealed during the game.
+    Expects game information in the form `Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green`.
     """
 
     game, rounds = line.split(":")
