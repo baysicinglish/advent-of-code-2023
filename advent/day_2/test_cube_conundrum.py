@@ -1,4 +1,13 @@
-from .cube_conundrum import get_possible_games, parse_line, is_cube_count_exceeded, get_total_power_of_games
+import pytest
+
+from .cube_conundrum import (
+    get_possible_games,
+    parse_line,
+    is_cube_count_exceeded,
+    get_total_power_of_games,
+    calculate_power,
+    PowerLevelExceeded,
+)
 
 
 class TestGetPossibleGames:
@@ -67,3 +76,11 @@ class TestGetTotalPowerOfGames:
 
         assert power <= 9000
         assert power == 2286
+
+
+class TestCalculatePower:
+    def test_raises_exception_if_power_over_9000(self):
+        cubes = {"RED": 9001}
+
+        with pytest.raises(PowerLevelExceeded):
+            calculate_power(cubes)

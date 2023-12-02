@@ -47,10 +47,18 @@ def get_total_power_of_games(results_log):
     return sum(power_levels)
 
 
+class PowerLevelExceeded(ValueError):
+    def __init__(self, power_level, message="It's over 9000!!"):
+        self.power_level = power_level
+        super().__init__(message)
+
+
 def calculate_power(cubes):
     power = 1
     for cube_count in cubes.values():
         power *= cube_count
+    if power > 9000:
+        raise PowerLevelExceeded(power, "It's over 9000!!!")
     return power
 
 
@@ -58,4 +66,8 @@ if __name__ == "__main__":
     cubes_in_game = {"RED": 12, "GREEN": 13, "BLUE": 14}
     possible_games = tuple(get_possible_games("challenge.txt", cubes_in_game))
     print(sum(possible_games))
-    print(get_total_power_of_games("challenge.txt"))
+
+    try:
+        print(get_total_power_of_games("challenge.txt"))
+    except PowerLevelExceeded as exc:
+        print(exc.power_level)
