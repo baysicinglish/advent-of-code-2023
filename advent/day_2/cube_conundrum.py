@@ -36,7 +36,24 @@ def is_cube_count_exceeded(available_cubes, min_cubes_needed):
     return False
 
 
+def get_total_power_of_games(results_log):
+    power_levels = []
+    with open(f"day_2/inputs/{results_log}") as results:
+        for line in results:
+            _, min_cubes_needed = parse_line(line)
+            power_levels.append(calculate_power(min_cubes_needed))
+    return sum(power_levels)
+
+
+def calculate_power(cubes):
+    power = 1
+    for cube_count in cubes.values():
+        power *= cube_count
+    return power
+
+
 if __name__ == "__main__":
     cubes_in_game = {"RED": 12, "GREEN": 13, "BLUE": 14}
     possible_games = tuple(get_possible_games("challenge.txt", cubes_in_game))
     print(sum(possible_games))
+    print(get_total_power_of_games("challenge.txt"))

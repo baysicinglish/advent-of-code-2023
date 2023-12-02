@@ -1,4 +1,4 @@
-from .cube_conundrum import get_possible_games, parse_line, is_cube_count_exceeded
+from .cube_conundrum import get_possible_games, parse_line, is_cube_count_exceeded, get_total_power_of_games
 
 
 class TestGetPossibleGames:
@@ -59,3 +59,11 @@ class TestIsCubeCountExceeded:
         result = is_cube_count_exceeded(available_cubes, min_game_cubes)
 
         assert result is True
+
+
+class TestGetTotalPowerOfGames:
+    def test_calculates_total_power(self):
+        power = get_total_power_of_games("example.txt")
+
+        assert power <= 9000
+        assert power == 2286
