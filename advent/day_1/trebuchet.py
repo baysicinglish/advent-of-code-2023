@@ -19,7 +19,7 @@ def parse_calibration_value(line, include_words=False):
     left_pointer, right_pointer = 0, len(line) - 1
 
     def get_closest_number(pointer):
-        nonlocal left_pointer
+        increment = (lambda x: x + 1) if pointer == left_pointer else (lambda x: x - 1)
 
         while left_pointer <= pointer <= right_pointer:
             if line[pointer].isdigit():
@@ -27,10 +27,7 @@ def parse_calibration_value(line, include_words=False):
             elif include_words and (value := get_numerical_value(line[pointer:])):
                 return value
 
-            if pointer == left_pointer:
-                left_pointer = pointer = pointer + 1
-            else:
-                pointer -= 1
+            pointer = increment(pointer)
 
     left_digit = get_closest_number(left_pointer)
     right_digit = get_closest_number(right_pointer)
