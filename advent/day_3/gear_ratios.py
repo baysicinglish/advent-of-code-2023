@@ -1,67 +1,67 @@
+from .matrices import Matrix, CoordinateOutOfBounds
 
 
 def get_part_numbers(engine_schematic):
     with open(f"day_3/inputs/{engine_schematic}") as schematic:
-        lines = [line.strip() for line in schematic]
+        matrix = Matrix([line.strip() for line in schematic])
 
-    for line_number, line in enumerate(lines):
-        current_part = ""
-        valid_part = False
+    current_part = ""
+    is_valid_part = False
 
-        for char_position, char in enumerate(line):
-            if char.isdigit():
-                current_part += char
+    for coordinate in matrix:
+        if coordinate.value.isdigit():
+            current_part += coordinate.value
 
-                # is important part
-                for check_line in [lines[line_number + offset] for offset in range(-1, 2) if 0 <= line_number + offset <= len(lines) - 1]:
-                    for check_char in [check_line[char_position + offset] for offset in range(-1, 2) if 0 <= char_position + offset <= len(line) - 1]:
-                        if not (check_char.isdigit() or check_char == "."):
-                            valid_part = True
-            else:
-                if valid_part and current_part:
-                    yield int(current_part)
+            neighbours = coordinate.get_neighbours()
+            if any(neighbour for neighbour in neighbours if not (neighbour.value.isdigit() or neighbour.value == ".")):
+                is_valid_part = True
 
-                current_part = ""
-                valid_part = False
+            if not is_end_of_row(coordinate):
+                continue
 
-        if valid_part and current_part:
+        if is_valid_part and current_part:
             yield int(current_part)
+
+        current_part = ""
+        is_valid_part = False
 
 
 def get_gears(engine_schematic):
-    gears = {}
-
     with open(f"day_3/inputs/{engine_schematic}") as schematic:
-        lines = [line.strip() for line in schematic]
+        matrix = Matrix([line.strip() for line in schematic])
 
-    for line_number, line in enumerate(lines):
+    cogs = {}
+    current_part = ""
+    adjacent_cogs = set()
+
+    for coordinate in matrix:
+        if coordinate.value.isdigit():
+            current_part += coordinate.value
+
+            adjacent_cogs.update(
+                (neighbour.x, neighbour.y)
+                for neighbour in coordinate.get_neighbours() if neighbour.value == "*"
+            )
+
+            if not is_end_of_row(coordinate):
+                continue
+
+        if adjacent_cogs and current_part:
+            for cog in adjacent_cogs:
+                cogs[cog] = cogs.get(cog, []) + [int(current_part)]
+
         current_part = ""
-        adjacent_gears = []
+        adjacent_cogs = set()
 
-        for char_position, char in enumerate(line):
-            if char.isdigit():
-                current_part += char
+    return {cog: parts[0] * parts[1] for cog, parts in cogs.items() if len(parts) == 2}
 
-                for check_line_num in [line_number + offset for offset in range(-1, 2) if 0 <= line_number + offset <= len(lines) - 1]:
-                    for check_char_num in [char_position + offset for offset in range(-1, 2) if 0 <= char_position + offset <= len(line) - 1]:
-                        if lines[check_line_num][check_char_num] == "*":
-                            gear_name = f"x{check_char_num}y{check_line_num}"
-                            if gear_name not in adjacent_gears:
-                                adjacent_gears.append(gear_name)
 
-            else:
-                if adjacent_gears and current_part:
-                    for gear in adjacent_gears:
-                        gears[gear] = gears.get(gear, []) + [int(current_part)]
-
-                current_part = ""
-                adjacent_gears = []
-
-        if adjacent_gears and current_part:
-            for gear in adjacent_gears:
-                gears[gear] = gears.get(gear, []) + [int(current_part)]
-
-    return {gear: parts[0] * parts[1] for gear, parts in gears.items() if len(parts) == 2}
+def is_end_of_row(coordinate):
+    try:
+        coordinate.move(right=1)
+        return False
+    except CoordinateOutOfBounds:
+        return True
 
 
 if __name__ == "__main__":
