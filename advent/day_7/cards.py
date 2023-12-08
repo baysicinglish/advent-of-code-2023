@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Sequence, Tuple
 from functools import total_ordering, cached_property
 from enum import Enum
+
+
+class HouseRules(Enum):
+    JOKER = "Joker ruling"
 
 
 @total_ordering
@@ -33,19 +37,25 @@ class Hand:
         PAIR = "Pair"
         HIGH_CARD = "High card"
 
-    def __init__(self, cards: Sequence[Card]):
+    def __init__(self, cards: Sequence[Card], house_rules: Tuple[HouseRules | None] = tuple()):
         assert len(cards) == 5, "A hand is comprised of 5 cards"
         self.cards = cards
+        self.house_rules = house_rules
 
     def __repr__(self):
         return f"Hand[{''.join(card.value for card in self.cards)}]"
 
     def __lt__(self, other: Hand):
         if self.type == other.type:
-            for index, value in enumerate(self.cards):
-                if value == other.cards[index]:
+            for index, current_card in enumerate(self.cards):
+                if current_card == other.cards[index]:
                     continue
-                return value < other.cards[index]
+
+                if HouseRules.JOKER in self.house_rules:
+                    if current_card.value == "J" or other.cards[index].value == "J":
+                        return current_card.value == "J"
+
+                return current_card < other.cards[index]
 
         for hand_type in self.Types:
             if other.type == hand_type:
@@ -58,7 +68,15 @@ class Hand:
         card_counts = {}
         for card in self.cards:
             card_counts[card.value] = card_counts.get(card.value, 0) + 1
-        card_counts = list(card_counts.values())
+
+        if HouseRules.JOKER in self.house_rules:
+            joker_count = card_counts.pop("J", 0)
+            if not card_counts:
+                return self.Types.FIVE_OF_A_KIND
+            largest_count = max(card_counts, key=card_counts.get)
+            card_counts[largest_count] += joker_count
+
+        card_counts = tuple(card_counts.values())
 
         if 5 in card_counts:
             return self.Types.FIVE_OF_A_KIND

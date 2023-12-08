@@ -1,6 +1,6 @@
 import pytest
 
-from .cards import Card, Hand
+from .cards import Card, Hand, HouseRules
 
 
 class TestCard:
@@ -37,6 +37,16 @@ class TestHand:
 
         assert hand.type == hand_type
 
+    @pytest.mark.parametrize("cards, hand_type", [
+        ("KTJJT", Hand.Types.FOUR_OF_A_KIND),
+        ("JJJJJ", Hand.Types.FIVE_OF_A_KIND)
+    ])
+    def test_hand_type_with_joker_rule(self, cards, hand_type):
+        cards = [Card(card) for card in cards]
+        hand = Hand(cards, house_rules=(HouseRules.JOKER,))
+
+        assert hand.type == hand_type
+
     @pytest.mark.parametrize("lower_hand, upper_hand", [
         ("32T3K", "KTJJT"),
         ("KTJJT", "KK677"),
@@ -46,5 +56,11 @@ class TestHand:
     def test_hand_comparison(self, lower_hand, upper_hand):
         lower_hand = Hand([Card(card) for card in lower_hand])
         upper_hand = Hand([Card(card) for card in upper_hand])
+
+        assert lower_hand < upper_hand
+
+    def test_hand_comparison_with_joker_rule(self):
+        lower_hand = Hand([Card(card) for card in "JKKK2"])
+        upper_hand = Hand([Card(card) for card in "QQQQ2"])
 
         assert lower_hand < upper_hand
